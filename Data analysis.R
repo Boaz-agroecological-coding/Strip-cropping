@@ -62,9 +62,6 @@ average_width <- mean(stripcropping_parcels$width, na.rm = TRUE)
 sd_width <- sd(stripcropping_parcels$width, na.rm = TRUE)
 paste("mean: ", format(average_width, digits = 3), " +/-", format(sd_width, digits = 3), sep = "")
 
-#### Could you help me with choosing the correct type of test by first perfoming some others tests, for example a test to determine normal distribution, and maybe some other tests to comfirm the assumptions that are made in the statistical tests that we want to use?
-
-# Assume freq_diff is the vector of differences between strip cropping and monocropping frequencies
 freq_diff <- stripcropping$freq - monocropping$freq
 
 mean_freq_strip <- (mean(stripcropping$freq))
@@ -721,66 +718,4 @@ write.xlsx(info_provinces, path)
 sum(info_provinces$`total area stripcropping [ha]`)
 
 
-##########~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~##########
-
-       #### Plot Crop area vs Crop freq ####
-
-crop_list <- unique(stripcropping$gewas)
-
-crops_info <- data.frame()
-
-for (i in crop_list) {
-  subset <- stripcropping[stripcropping$gewas == i,]
-  subset2 <- stripcropping_parcels[stripcropping_parcels$gnrc_cr == i,]
-  area <- round(sum(subset2$area)/10000, digits = 2)
-  freq <- round(mean(subset$freq), digits = 2)
-  sd <- sd(subset$freq)
-  occ <- nrow(subset)
-  thing <- c(i, area, freq, sd, occ)
-  crops_info <- rbind(crops_info, thing)
-}
-names <- c("crop", "area [hec]", "freq", "sd_freq", "occurence")
-colnames(crops_info) <- names
-crops_info$`area [hec]` <- as.numeric(crops_info$`area [hec]`)
-crops_info$freq <- round(as.numeric(crops_info$freq), digits = 2)
-crops_info$sd_freq <- round(as.numeric(crops_info$sd_freq), digits = 2)
-crops_info$occurence <- as.numeric(crops_info$occurence)
-
-model <- lm(`area [hec]` ~ freq , data = crops_info)
-r2 <- summary(model)$r.squared
-crops_plot <- ggplot(crops_info, aes(x = freq, y = `area [hec]`)) +
-  geom_point() + 
-  geom_smooth(method = "lm", se = TRUE, color = "darkgreen") +
-  annotate("text", x = Inf, y = Inf, label = paste("R^2 = ", round(r2, 3)), 
-           hjust = 2, vjust = 16, size = 5, color = "darkgreen") +
-  labs(title = "Crop area vs Crop freq",
-       x = "Frequency",
-       y = "Area [hec]") +
-  theme_minimal() 
-print(crops_plot)
-
-model2 <- aov(`area [hec]` ~ freq * occurence, data = crops_info)
-summary(model2)
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-high_occ <- crops_info[crops_info$occurence > 10,]
-
-model3 <- lm(`area [hec]` ~ freq, data = high_occ)
-r2 <- summary(model3)$r.squared
-crops_plot_high_occ <- ggplot(high_occ, aes(x = freq, y = `area [hec]`)) +
-  geom_point() + 
-  geom_smooth(method = "lm", se = TRUE, color = "darkorange") +
-  annotate("text", x = Inf, y = Inf, label = paste("R^2 = ", round(r2, 3)), 
-           hjust = 2, vjust = 16, size = 5, color = "darkorange") +
-  labs(title = "Crop area vs Crop freq (high occurence)",
-       x = "Frequency",
-       y = "Area [hec]") +
-  theme_minimal() 
-print(crops_plot_high_occ)
-
-model4 <- aov(`area [hec]` ~ freq * occurence, data = high_occ)
-summary(model4)
-
-model5 <- lm(freq ~ occurence, data = crops_info)
-summary(model5)
+##########~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~########
